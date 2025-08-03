@@ -1,0 +1,470 @@
+{
+  "name": "Update-Row-Multi",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Update-Row-Multi",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-240, 0],
+      "id": "7f069904afc8152edd41c904dd4b5b87",
+      "name": "Webhook",
+      "webhookId": "c1630b3a-c1630b3a-c1630b3a-c1630b3a"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Row Updated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [1320, 0],
+      "id": "7d6a440468b65dd225d0721dfec3badb",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = { ...items[0].json.body };\n\n// Remove unwanted keys\ndelete data.doc;\ndelete data.sheet;\ndelete data.rowIndex;\n\nreturn [\n  {\n    json: data\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "168f52791241676a54145571e0628d04",
+      "name": "Code1"
+    }
+,
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.doc }}",
+                    "rightValue": "Links",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "07fe8a740532a9d7b64761af4ea1eb1b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.doc }}",
+                    "rightValue": "Test",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "33203dd8978bbc18eaab8008b1a26089"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [220, 0],
+      "id": "868a2cdf1a02f7415f759b594bad52ed",
+      "name": "Doc Switch"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+                {
+                  "conditions": {
+                    "options": {
+                      "caseSensitive": true,
+                      "leftValue": "",
+                      "typeValidation": "strict",
+                      "version": 2
+                    },
+                    "conditions": [
+                      {
+                        "leftValue": "={{ $('Webhook').item.json.body.sheet }}",
+                        "rightValue": "mixed",
+                        "operator": {
+                          "type": "string",
+                          "operation": "equals"
+                        },
+                        "id": "c8cad719d6f0aa98eade72ecca8e659c"
+                      }
+                    ],
+                    "combinator": "and"
+                  }
+                },
+                {
+                  "conditions": {
+                    "options": {
+                      "caseSensitive": true,
+                      "leftValue": "",
+                      "typeValidation": "strict",
+                      "version": 2
+                    },
+                    "conditions": [
+                      {
+                        "leftValue": "={{ $('Webhook').item.json.body.sheet }}",
+                        "rightValue": "Meeting",
+                        "operator": {
+                          "type": "string",
+                          "operation": "equals"
+                        },
+                        "id": "5451e2382b1d7bbf0d1a064e8b4b4d69"
+                      }
+                    ],
+                    "combinator": "and"
+                  }
+                }]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [420, 0],
+      "id": "560b492f7f15b36143c2b6349b38eea0",
+      "name": "Sheet Switch - Links"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+                {
+                  "conditions": {
+                    "options": {
+                      "caseSensitive": true,
+                      "leftValue": "",
+                      "typeValidation": "strict",
+                      "version": 2
+                    },
+                    "conditions": [
+                      {
+                        "leftValue": "={{ $('Webhook').item.json.body.sheet }}",
+                        "rightValue": "test1",
+                        "operator": {
+                          "type": "string",
+                          "operation": "equals"
+                        },
+                        "id": "dd05f9324d2d7638b1d8e3df5b0f3bb3"
+                      }
+                    ],
+                    "combinator": "and"
+                  }
+                }]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [420, 200],
+      "id": "1f13a219a90627b620dc555422725dbf",
+      "name": "Sheet Switch - Test"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "ad5cc62840bb3de3d0cf2e3cb62d34ea",
+          "mode": "list",
+          "cachedResultName": "Links",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ad5cc62840bb3de3d0cf2e3cb62d34ea/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "mixed",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": ["Link"],
+          "schema": [
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "locationDefine": {
+            "values": {
+              "firstDataRow": "={{ $('Webhook').item.json.body.rowIndex }}"
+            }
+          },
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [920, 0],
+      "id": "6df21030ca2a8e02286f126d64aac903",
+      "name": "Append or update row in Links - mixed",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "U18I4PNJLLzjGl28",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "ad5cc62840bb3de3d0cf2e3cb62d34ea",
+          "mode": "list",
+          "cachedResultName": "Links",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ad5cc62840bb3de3d0cf2e3cb62d34ea/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Meeting",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": ["Meeting Name"],
+          "schema": [
+            {
+              "id": "Meeting Name",
+              "displayName": "Meeting Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "locationDefine": {
+            "values": {
+              "firstDataRow": "={{ $('Webhook').item.json.body.rowIndex }}"
+            }
+          },
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [920, 200],
+      "id": "ad07f6c6049dadc82f9d7c3b56f074fa",
+      "name": "Append or update row in Links - Meeting",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "U18I4PNJLLzjGl28",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "9b4e8e9a8ee602af37cf0a04a5aaf5d2",
+          "mode": "list",
+          "cachedResultName": "Test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/9b4e8e9a8ee602af37cf0a04a5aaf5d2/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "test1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": ["Name"],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "locationDefine": {
+            "values": {
+              "firstDataRow": "={{ $('Webhook').item.json.body.rowIndex }}"
+            }
+          },
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [920, 400],
+      "id": "238943aa88976bc0bb3ed647148f7c72",
+      "name": "Append or update row in Test - test1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "U18I4PNJLLzjGl28",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in Links - mixed": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in Links - Meeting": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet Switch - Links": {
+      "main": [
+          [
+            {
+              "node": "Append or update row in Links - mixed",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Append or update row in Links - Meeting",
+              "type": "main",
+              "index": 0
+            }
+          ]]
+    },
+    "Append or update row in Test - test1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet Switch - Test": {
+      "main": [
+          [
+            {
+              "node": "Append or update row in Test - test1",
+              "type": "main",
+              "index": 0
+            }
+          ]]
+    },
+    "Doc Switch": {
+      "main": [
+        [
+          {
+            "node": "Sheet Switch - Links",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sheet Switch - Test",
+            "type": "main",
+            "index": 0
+          }
+        ]]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Doc Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "d9e8ec7cb64eea2574d46ec63ed00151",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b7d47ff0e9d26525ff10bf283f680526"
+  },
+  "id": "2d4d6173f5c2ca0ac8b21c2a0ae81691",
+  "tags": []
+}

@@ -1,0 +1,209 @@
+{
+  "name": "Fetch-Rows-Multi",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Fetch-Rows-Multi",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "f099095f95a432dfeaa54936200a8f9d",
+      "name": "Webhook",
+      "webhookId": "56222454-56222454-56222454-56222454"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [880, 0],
+      "id": "181d8ea919615502ac5565be8b9f91e7",
+      "name": "Respond to Webhook"
+    }
+,
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.doc }}",
+                    "rightValue": "Links",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0474facda11c4d975b931467fef14180"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.doc }}",
+                    "rightValue": "Test",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "98e8387916963e043ed3bae211d81b62"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [320, 0],
+      "id": "fb00ef1878be9366af9607b908f181c7",
+      "name": "Doc Switch"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "f4f66b3b1f3323ae4d619b3339cab6d0",
+          "mode": "list",
+          "cachedResultName": "Links",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/f4f66b3b1f3323ae4d619b3339cab6d0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Webhook').item.json.body.sheet }}",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [660, 0],
+      "id": "ae23b04b137911bbd3be84d4b2dba988",
+      "name": "Get row(s) in Links",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "U18I4PNJLLzjGl28",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "8020ef92815c945e425f03ee8c1dc212",
+          "mode": "list",
+          "cachedResultName": "Test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/8020ef92815c945e425f03ee8c1dc212/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Webhook').item.json.body.sheet }}",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [660, 200],
+      "id": "a9a3b77fc44714ae3735e8d66491e7b8",
+      "name": "Get row(s) in Test",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "U18I4PNJLLzjGl28",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Doc Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Links": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Test": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doc Switch": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in Links",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in Test",
+            "type": "main",
+            "index": 0
+          }
+        ]]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "0f70c8ac4096fb05a506629b68098320",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e9df6f57ccc7da4c873642c9d5b2cf83"
+  },
+  "id": "c6bdaba8b27f6e88f74b8313626b23ff",
+  "tags": []
+}

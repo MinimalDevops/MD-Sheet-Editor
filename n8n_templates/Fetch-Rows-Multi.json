@@ -1,0 +1,155 @@
+{
+  "name": "Fetch-Rows-Multi",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Fetch-Rows-Multi",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e3ace0b1-89a8-4052-adb1-6871fe436094",
+      "name": "Webhook",
+      "webhookId": "52f8322d-ed91-4d49-99d4-09d7d83ca2ba"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1z0Kxr1JH4HM4xsA2N1AHoXCm1yBfnl7R3Ui1EK92dao",
+          "mode": "list",
+          "cachedResultName": "Links",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z0Kxr1JH4HM4xsA2N1AHoXCm1yBfnl7R3Ui1EK92dao/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Webhook').item.json.body.sheet }}",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        660,
+        0
+      ],
+      "id": "85cee9db-3549-4880-b8fe-3d6705d27c98",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "U18I4PNJLLzjGl28",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        880,
+        0
+      ],
+      "id": "9f988efd-9cc7-423e-9b8c-859109624b57",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.doc }}",
+                    "rightValue": "Links",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b6a4f5ba-3247-424d-8371-df8094242ed8"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        320,
+        0
+      ],
+      "id": "f44ab5c4-a754-45ea-bc23-4003fa6db686",
+      "name": "Doc Switch"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Doc Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doc Switch": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "qZhNcwxKb3aFaGse"
+  },
+  "versionId": "f07176b5-a0b7-4822-9323-5937c74d9678",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4dfc66dfb2193fdbf74ffebb6d293ef62cd1e60c603a322c6518e41d57edcf8"
+  },
+  "id": "LxP4bYmFY4HS3m6F",
+  "tags": []
+}
