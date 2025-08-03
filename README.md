@@ -230,3 +230,9 @@ For issues and questions:
 - **Scalable**: Can handle multiple documents and large datasets
 - **Reliable**: Built-in error handling and validation
 - **Mobile-Ready**: Responsive design works on all devices 
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute it as you wish.
