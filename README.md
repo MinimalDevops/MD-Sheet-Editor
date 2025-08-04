@@ -125,6 +125,14 @@ MD-Sheet-Editor/
 - **Fallback Strategy**: Multiple endpoint support with automatic failover
 - **Loading States**: Visual feedback during data operations
 
+## 🎬 Demo
+
+See MD Sheet Editor in action! This demo shows the key features including document selection, sheet navigation, data editing, and search functionality.
+
+![MD Sheet Editor Demo](assets/demo/md-sheet-editor-demo.gif)
+
+*The demo showcases the responsive design, dark theme, and intuitive user interface for managing Google Sheets data.*
+
 ## 🔧 Configuration
 
 The application uses environment variables for configuration:
