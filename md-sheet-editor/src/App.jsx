@@ -298,18 +298,18 @@ function App() {
     <div className="min-h-screen bg-black text-gray-100 p-4 font-sans">
       <EnvError error={envError} />
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
           <div className="flex items-center space-x-4">
             <img 
               src="https://pubfol.tapindersingh.click/MinimalDevopsLogo.png" 
               alt="MD Sheet Editor Logo" 
               className="h-12 w-auto"
             />
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Sheet Editor</h1>
+            <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">Sheet Editor</h1>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
-              className="bg-gray-800 text-gray-200 px-4 py-2 rounded hover:bg-gray-700 border border-gray-700 font-semibold"
+              className="bg-gray-800 text-gray-200 px-4 py-2 rounded hover:bg-gray-700 border border-gray-700 font-semibold text-sm lg:text-base"
               onClick={() => {
                 setSelectedSheet(null);
                 // Clear sheet from localStorage but keep document
@@ -322,7 +322,7 @@ function App() {
               &larr; Back to Sheet Selection
             </button>
             <button
-              className="bg-gray-800 text-gray-200 px-4 py-2 rounded hover:bg-gray-700 border border-gray-700 font-semibold"
+              className="bg-gray-800 text-gray-200 px-4 py-2 rounded hover:bg-gray-700 border border-gray-700 font-semibold text-sm lg:text-base"
               onClick={() => {
                 setSelectedDoc(null);
                 setSelectedSheet(null);
@@ -338,7 +338,11 @@ function App() {
             </button>
           </div>
         </div>
-        <div className="mb-4 text-lg font-semibold text-blue-300">Document: {selectedDoc} | Sheet: {selectedSheet}</div>
+        <div className="mb-4 text-sm lg:text-lg font-semibold text-blue-300 break-words">
+          <span className="block sm:inline">Document: {selectedDoc}</span>
+          <span className="hidden sm:inline"> | </span>
+          <span className="block sm:inline">Sheet: {selectedSheet}</span>
+        </div>
         
         {/* Search Bar */}
         <div className="mb-6">
@@ -348,7 +352,7 @@ function App() {
               placeholder="Search across all columns..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 lg:px-4 py-2 lg:py-3 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm lg:text-base"
             />
             {searchTerm && (
               <button
@@ -376,14 +380,14 @@ function App() {
           <>
             {/* Table */}
             <div className="overflow-x-auto rounded-lg shadow bg-gray-900 relative">
-              <table className="min-w-full text-sm border-separate border-spacing-0">
+              <table className="min-w-full text-xs lg:text-sm border-separate border-spacing-0">
                 <thead className="sticky top-0 z-10 bg-gray-800">
                   <tr>
                     {Object.keys(filteredData[0] || {}).map((col) => (
-                      <th
-                        key={col}
-                        className="px-4 py-3 text-left font-semibold border-b border-gray-800 whitespace-nowrap text-gray-300 uppercase tracking-wide text-xs"
-                      >
+                                              <th
+                          key={col}
+                          className="px-2 lg:px-4 py-2 lg:py-3 text-left font-semibold border-b border-gray-800 whitespace-nowrap text-gray-300 uppercase tracking-wide text-xs"
+                        >
                         {col}
                       </th>
                     ))}
@@ -409,11 +413,11 @@ function App() {
                           }
                         >
                           {Object.keys(row).map((col) => (
-                            <td
-                              key={col}
-                              className={`px-4 py-3 align-top border-b border-gray-800 max-w-xs truncate text-gray-100 ${
-                                !isUrl(row[col]) && typeof row[col] === "string" && row[col].length > TRUNCATE_LENGTH ? "cursor-pointer hover:underline" : ""
-                              }`}
+                                                      <td
+                            key={col}
+                            className={`px-2 lg:px-4 py-2 lg:py-3 align-top border-b border-gray-800 max-w-xs truncate text-gray-100 ${
+                              !isUrl(row[col]) && typeof row[col] === "string" && row[col].length > TRUNCATE_LENGTH ? "cursor-pointer hover:underline" : ""
+                            }`}
                               title={typeof row[col] === "string" && row[col].length > TRUNCATE_LENGTH ? row[col] : undefined}
                               onClick={() => {
                                 if (!isUrl(row[col]) && typeof row[col] === "string" && row[col].length > TRUNCATE_LENGTH) {
@@ -445,7 +449,7 @@ function App() {
                               )}
                             </td>
                           ))}
-                          <td className={`px-4 py-3 border-b border-gray-800 sticky right-0 z-20 ${
+                          <td className={`px-2 lg:px-4 py-2 lg:py-3 border-b border-gray-800 sticky right-0 z-20 ${
                             isEdited
                               ? "bg-gray-800"
                               : globalIdx % 2
@@ -494,9 +498,9 @@ function App() {
                 pages.push(totalPages);
               }
               return (
-                <div className="flex justify-center items-center mt-6 space-x-2">
+                <div className="flex justify-center items-center mt-6 space-x-1 lg:space-x-2">
                   <button
-                    className="px-3 py-2 border border-gray-700 rounded disabled:opacity-50 bg-gray-900 text-gray-200 shadow-sm hover:bg-gray-800 transition-colors"
+                    className="px-2 lg:px-3 py-2 border border-gray-700 rounded disabled:opacity-50 bg-gray-900 text-gray-200 shadow-sm hover:bg-gray-800 transition-colors text-sm lg:text-base"
                     onClick={() => setPage((p) => Math.max(0, p - 1))}
                     disabled={page === 0}
                   >
@@ -506,7 +510,7 @@ function App() {
                     {pages.map((pageNum, idx) => (
                       <button
                         key={idx}
-                        className={`px-3 py-2 border rounded transition-colors ${
+                        className={`px-2 lg:px-3 py-2 border rounded transition-colors text-sm lg:text-base ${
                           pageNum === '...'
                             ? 'border-gray-700 bg-gray-900 text-gray-500 cursor-default'
                             : pageNum === currentPage
@@ -525,7 +529,7 @@ function App() {
                     ))}
                   </div>
                   <button
-                    className="px-3 py-2 border border-gray-700 rounded disabled:opacity-50 bg-gray-900 text-gray-200 shadow-sm hover:bg-gray-800 transition-colors"
+                    className="px-2 lg:px-3 py-2 border border-gray-700 rounded disabled:opacity-50 bg-gray-900 text-gray-200 shadow-sm hover:bg-gray-800 transition-colors text-sm lg:text-base"
                     onClick={() =>
                       setPage((p) =>
                         Math.min(
