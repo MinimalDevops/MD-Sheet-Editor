@@ -648,16 +648,10 @@ function App() {
             <div className="p-6 pt-4 border-t border-gray-700">
               <div className="flex gap-2">
                 <button
-                  type="submit"
+                  type="button"
                   className="flex-1 bg-blue-600 text-white py-2 rounded font-semibold disabled:opacity-50 hover:bg-blue-700 transition"
                   disabled={saving}
-                  onClick={() => {
-                    const form = document.querySelector('form');
-                    if (form) {
-                      const event = new Event('submit', { cancelable: true });
-                      form.dispatchEvent(event);
-                    }
-                  }}
+                  onClick={handleSave}
                 >
                   {saving ? "Saving..." : "Save"}
                 </button>
@@ -701,11 +695,28 @@ function App() {
         }
       });
       
-      await tryEndpoints(
+      // Debug logging
+      console.log('=== UPDATE WEBHOOK DEBUG ===');
+      console.log('UPDATE_URLS:', UPDATE_URLS);
+      console.log('Request Body:', requestBody);
+      console.log('Request Body JSON:', JSON.stringify(requestBody, null, 2));
+      console.log('Selected Doc:', selectedDoc);
+      console.log('Selected Sheet:', selectedSheet);
+      console.log('Row Index:', rowIndex);
+      console.log('Edit Row Data:', editRowData);
+      console.log('===========================');
+      
+      const response = await tryEndpoints(
         UPDATE_URLS,
         (url) => axios.post(url, requestBody),
         "UPDATE"
       );
+      
+      console.log('=== UPDATE WEBHOOK RESPONSE ===');
+      console.log('Response:', response);
+      console.log('Response Status:', response?.status);
+      console.log('Response Data:', response?.data);
+      console.log('=============================');
       setData((prev) =>
         prev.map((row) =>
           (row.row_number !== undefined ? row.row_number : row) === rowIndex
