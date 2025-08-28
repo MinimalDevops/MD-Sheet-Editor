@@ -101,6 +101,7 @@ REACT_APP_N8N_PORT=5678
 # Webhook names (should match your n8n workflow names)
 REACT_APP_N8N_FETCH_WEBHOOK=Fetch-Rows-Multi
 REACT_APP_N8N_UPDATE_WEBHOOK=Update-Row-Multi
+REACT_APP_N8N_DELETE_WEBHOOK=Delete-Row
 ```
 
 ## 5. Generate and Import Templates
@@ -144,10 +145,12 @@ The script will create JSON files named after your webhook configuration:
 
 - `n8n_templates/output/{REACT_APP_N8N_FETCH_WEBHOOK}.json` (e.g., `Fetch-Rows-Multi.json`)
 - `n8n_templates/output/{REACT_APP_N8N_UPDATE_WEBHOOK}.json` (e.g., `Update-Row-Multi.json`)
+- `n8n_templates/output/{REACT_APP_N8N_DELETE_WEBHOOK}.json` (e.g., `Delete-Row.json`)
 
 **Note**: The actual filenames will match the webhook names you specified in your `.env` file:
 - `REACT_APP_N8N_FETCH_WEBHOOK` → `{value}.json`
 - `REACT_APP_N8N_UPDATE_WEBHOOK` → `{value}.json`
+- `REACT_APP_N8N_DELETE_WEBHOOK` → `{value}.json`
 
 ### Import to n8n
 
@@ -156,7 +159,7 @@ The script will create JSON files named after your webhook configuration:
    - Go to "Templates" in the left sidebar
    - Click "Import from file"
    - Select the generated JSON files from `n8n_templates/output/`
-   - Look for files named after your webhook configuration (e.g., `Fetch-Rows-Multi.json`, `Update-Row-Multi.json`)
+   - Look for files named after your webhook configuration (e.g., `Fetch-Rows-Multi.json`, `Update-Row-Multi.json`, `Delete-Row.json`)
 3. **Configure Document IDs**:
    - Open each imported workflow
    - Replace placeholder document IDs with your actual Google Sheets document IDs
@@ -165,7 +168,12 @@ The script will create JSON files named after your webhook configuration:
    - Click the "Active" toggle to enable each workflow
    - Note the webhook URLs that appear
 5. **Test Workflows**:
-   - Use the webhook URLs to test fetch and update operations
+   - Use the webhook URLs to test fetch, update, and delete operations
+   - Test delete functionality with the provided test scripts:
+     ```bash
+     ./test-delete.sh                    # Test delete for Links document
+     ./test-delete-test-doc.sh           # Test delete for Test document
+     ```
 
 ### Alternative: Import via CLI
 
@@ -180,6 +188,7 @@ n8n import:workflow --input=./n8n_templates/output --separate --update-existing
 
 # Import with custom names
 n8n import:workflow --input=n8n_templates/output/Update-Row-Multi.json
+n8n import:workflow --input=n8n_templates/output/Delete-Row.json
 ```
 
 **Note**: Replace the filenames with your actual webhook names as configured in your `.env` file.
@@ -209,6 +218,25 @@ Webhook → Code → Doc Switch → Sheet Switch → Append/Update nodes → Res
 - **Sheet Switch**: Routes to the correct sheet within the document
 - **Append/Update**: Adds or updates rows in the specified sheet
 - **Respond to Webhook**: Returns success message
+
+### Delete Template Structure
+
+```
+Webhook → Code → Doc Switch → Delete nodes → Respond to Webhook
+```
+
+- **Webhook**: Receives POST requests with `doc`, `sheet`, and `row_number` parameters
+- **Code**: Processes incoming data
+- **Doc Switch**: Routes to the correct document based on `doc` parameter
+- **Delete nodes**: One per document for deleting rows by row number
+- **Respond to Webhook**: Returns response to client
+
+### Key Features
+- ✅ **Multi-document support**: Automatically generates nodes for each document in config
+- ✅ **Dynamic sheet selection**: Uses `{{ $('Webhook').item.json.body.sheet }}` for sheet name
+- ✅ **Row number targeting**: Uses `{{ $('Webhook').item.json.body.row_number }}` for row index
+- ✅ **Proper error handling**: Includes response handling and error workflows
+- ✅ **Optimal node positioning**: Generous spacing to prevent overlaps
 
 ## API Usage
 
@@ -244,6 +272,21 @@ Webhook → Code → Doc Switch → Sheet Switch → Append/Update nodes → Res
 
 **Response**: `"Row Updated"`
 
+### Delete Data
+
+**Endpoint**: `POST /webhook/Delete-Row`
+
+**Request Body**:
+```json
+{
+  "doc": "Links",
+  "sheet": "Meeting",
+  "row_number": 2
+}
+```
+
+**Response**: Returns the deleted row data
+
 ## Importing to n8n
 
 1. **Import Templates**: In n8n, go to Templates and import the generated JSON files
@@ -256,6 +299,7 @@ Webhook → Code → Doc Switch → Sheet Switch → Append/Update nodes → Res
 - **Document IDs**: You'll need to update the document IDs in the generated templates with your actual Google Sheets document IDs
 - **Credentials**: Make sure your Google Sheets OAuth2 credential ID matches the one in your `.env` file
 - **Webhook URLs**: The webhook URLs will be available after importing and activating the workflows in n8n
+- **Delete Functionality**: The delete feature includes confirmation dialogs and proper error handling for safe row deletion
 
 ## Troubleshooting
 

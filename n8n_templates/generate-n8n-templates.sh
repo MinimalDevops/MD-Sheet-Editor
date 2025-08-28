@@ -296,6 +296,238 @@ EOF
     print_status "Fetch template generated: $OUTPUT_DIR/${template_name}.json"
 }
 
+# Generate Delete template
+generate_delete_template() {
+    print_status "Generating Delete template..."
+    
+    local template_name="${REACT_APP_N8N_DELETE_WEBHOOK:-Delete-Row}"
+    local webhook_id=$(generate_webhook_id)
+    local webhook_node_id=$(generate_id)
+    local respond_node_id=$(generate_id)
+    local doc_switch_id=$(generate_id)
+    local code_node_id=$(generate_id)
+    
+    # Create temporary file
+    local temp_file=$(mktemp)
+    
+    # Start building the template
+    cat > "$temp_file" << EOF
+{
+  "name": "$template_name",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "$template_name",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-560, -16],
+      "id": "$webhook_node_id",
+      "name": "Webhook",
+      "webhookId": "$webhook_id"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [600, -16],
+      "id": "$respond_node_id",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = { ...items[0].json.body };\\n\\nreturn [\\n  {\\n    json: data\\n  }\\n];\\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, -16],
+      "id": "$code_node_id",
+      "name": "Code1"
+    }
+EOF
+
+    # Generate doc switch rules and delete nodes
+    local doc_switch_rules=""
+    local delete_nodes=""
+    local delete_connections=""
+    local doc_switch_connections=""
+    local position_y=0
+    local first_doc_rule=true
+    local doc_index=0
+    
+    while IFS=':' read -r doc sheets; do
+        if [ -n "$doc" ] && [ -n "$sheets" ]; then
+            local delete_node_id=$(generate_id)
+            local doc_id=$(generate_id)
+            
+            # Add doc switch rule
+            if [ "$first_doc_rule" = true ]; then
+                first_doc_rule=false
+            else
+                doc_switch_rules="$doc_switch_rules,"
+            fi
+            doc_switch_rules="$doc_switch_rules
+            {
+              \"conditions\": {
+                \"options\": {
+                  \"caseSensitive\": true,
+                  \"leftValue\": \"\",
+                  \"typeValidation\": \"strict\",
+                  \"version\": 2
+                },
+                \"conditions\": [
+                  {
+                    \"leftValue\": \"={{ \$('Webhook').item.json.body.doc }}\",
+                    \"rightValue\": \"$doc\",
+                    \"operator\": {
+                      \"type\": \"string\",
+                      \"operation\": \"equals\"
+                    },
+                    \"id\": \"$(generate_id)\"
+                  }
+                ],
+                \"combinator\": \"and\"
+              }
+            }"
+            
+            # Generate Delete Row node for this document
+            local node_name="Delete rows or columns from sheet - $doc"
+            
+            delete_nodes="$delete_nodes,
+    {
+      \"parameters\": {
+        \"operation\": \"delete\",
+        \"documentId\": {
+          \"__rl\": true,
+          \"value\": \"$doc_id\",
+          \"mode\": \"list\",
+          \"cachedResultName\": \"$doc\",
+          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/$doc_id/edit?usp=drivesdk\"
+        },
+        \"sheetName\": {
+          \"__rl\": true,
+          \"value\": \"={{ \$('Webhook').item.json.body.sheet }}\",
+          \"mode\": \"name\"
+        },
+        \"startIndex\": \"={{ \$('Webhook').item.json.body.row_number }}\"
+      },
+      \"type\": \"n8n-nodes-base.googleSheets\",
+      \"typeVersion\": 4.6,
+      \"position\": [400, $position_y],
+      \"id\": \"$delete_node_id\",
+      \"name\": \"$node_name\",
+      \"credentials\": {
+        \"googleSheetsOAuth2Api\": {
+          \"id\": \"$GOOGLE_SHEETS_OAUTH2_API_ID\",
+          \"name\": \"Google Sheets account\"
+        }
+      }
+    }"
+            
+            delete_connections="$delete_connections,
+    \"$node_name\": {
+      \"main\": [
+        [
+          {
+            \"node\": \"Respond to Webhook\",
+            \"type\": \"main\",
+            \"index\": 0
+          }
+        ]
+      ]
+    }"
+            
+            # Add Doc Switch connection for this document
+            if [ -n "$doc_switch_connections" ]; then
+                doc_switch_connections="$doc_switch_connections,"
+            fi
+            doc_switch_connections="$doc_switch_connections
+        [
+          {
+            \"node\": \"$node_name\",
+            \"type\": \"main\",
+            \"index\": 0
+          }
+        ]"
+            
+            position_y=$((position_y + 200))
+            doc_index=$((doc_index + 1))
+        fi
+    done < <(parse_docs_config)
+    
+    # Add doc switch node
+    cat >> "$temp_file" << EOF
+,
+    {
+      "parameters": {
+        "rules": {
+          "values": [$doc_switch_rules]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [200, -16],
+      "id": "$doc_switch_id",
+      "name": "Doc Switch"
+    }$delete_nodes
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }$delete_connections,
+    "Doc Switch": {
+      "main": [$doc_switch_connections]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Doc Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "$(generate_id)",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "$(generate_id)"
+  },
+  "id": "$(generate_id)",
+  "tags": []
+}
+EOF
+
+    # Copy to final location
+    cp "$temp_file" "$OUTPUT_DIR/${template_name}.json"
+    rm "$temp_file"
+    
+    print_status "Delete template generated: $OUTPUT_DIR/${template_name}.json"
+}
+
 # Generate Update template
 generate_update_template() {
     print_status "Generating Update template..."
@@ -645,14 +877,16 @@ EOF
 main() {
     print_status "Starting n8n template generation..."
     
-    # Generate both templates
+    # Generate all templates
     generate_fetch_template
     generate_update_template
+    generate_delete_template
     
     print_status "Template generation completed!"
     print_status "Generated files:"
     echo "  - $OUTPUT_DIR/${REACT_APP_N8N_FETCH_WEBHOOK:-Fetch-Rows-Multi}.json"
     echo "  - $OUTPUT_DIR/${REACT_APP_N8N_UPDATE_WEBHOOK:-Update-Rows-Multi}.json"
+    echo "  - $OUTPUT_DIR/${REACT_APP_N8N_DELETE_WEBHOOK:-Delete-Row}.json"
     echo ""
     print_warning "Note: You'll need to update the document IDs in the generated templates with your actual Google Sheets document IDs."
 }
