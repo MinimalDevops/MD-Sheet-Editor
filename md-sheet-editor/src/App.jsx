@@ -20,6 +20,7 @@ const TRUNCATE_LENGTH = 60; // Number of chars to show in table cell
 const N8N_PORT = process.env.REACT_APP_N8N_PORT || "5678";
 const N8N_FETCH_WEBHOOK = process.env.REACT_APP_N8N_FETCH_WEBHOOK || "Fetch-Rows-Multi";
 const N8N_UPDATE_WEBHOOK = process.env.REACT_APP_N8N_UPDATE_WEBHOOK || "Update-Row-Multi";
+const N8N_DELETE_WEBHOOK = process.env.REACT_APP_N8N_DELETE_WEBHOOK || "Delete-Row";
 
 
 
@@ -48,6 +49,7 @@ const buildEndpointUrls = (webhookName) => {
 
 const FETCH_URLS = buildEndpointUrls(N8N_FETCH_WEBHOOK);
 const UPDATE_URLS = buildEndpointUrls(N8N_UPDATE_WEBHOOK);
+const DELETE_URLS = buildEndpointUrls(N8N_DELETE_WEBHOOK);
 
 // Log environment configuration for debugging
 logEnvironmentConfig();
@@ -137,6 +139,8 @@ function App() {
   const [editedRows, setEditedRows] = useState({});
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [page, setPage] = useState(0);
   const [showCellModal, setShowCellModal] = useState(false);
   const [cellModalContent, setCellModalContent] = useState("");
@@ -574,14 +578,15 @@ function App() {
       {/* Modal for editing row */}
       {editRowIdx !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4">
-          <div className="bg-gray-900 rounded shadow-lg w-full max-w-2xl max-h-[90vh] flex flex-col relative animate-fadeIn border border-gray-700">
-            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-700">
+                  <div className="bg-gray-900 rounded shadow-lg w-full max-w-4xl h-[95vh] flex flex-col relative animate-fadeIn border border-gray-700">
+                      <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-700 flex-shrink-0">
               <h2 className="text-xl font-bold text-gray-100">Edit Row {editRowData.row_number ? `#${editRowData.row_number}` : ""}</h2>
               <button
                 className="text-gray-400 hover:text-gray-200 text-2xl font-bold"
                 onClick={() => setEditRowIdx(null)}
                 aria-label="Close"
-                disabled={saving}
+                disabled={saving || deleting}
+                title="Close edit modal"
               >
                 ×
               </button>
@@ -643,23 +648,35 @@ function App() {
                 {saveError && (
                   <div className="text-red-400 mb-2">{saveError}</div>
                 )}
+                {deleteError && (
+                  <div className="text-red-400 mb-2">{deleteError}</div>
+                )}
               </form>
             </div>
-            <div className="p-6 pt-4 border-t border-gray-700">
+            <div className="p-6 pt-4 border-t border-gray-700 bg-gray-800 flex-shrink-0">
               <div className="flex gap-2">
                 <button
                   type="button"
                   className="flex-1 bg-blue-600 text-white py-2 rounded font-semibold disabled:opacity-50 hover:bg-blue-700 transition"
-                  disabled={saving}
+                  disabled={saving || deleting}
                   onClick={handleSave}
                 >
                   {saving ? "Saving..." : "Save"}
                 </button>
                 <button
                   type="button"
+                  className="bg-red-600 text-white py-2 px-4 rounded font-semibold disabled:opacity-50 hover:bg-red-700 transition"
+                  disabled={saving || deleting}
+                  onClick={handleDelete}
+                  title="Delete this row permanently"
+                >
+                  {deleting ? "Deleting..." : "Delete"}
+                </button>
+                <button
+                  type="button"
                   className="flex-1 bg-gray-700 text-gray-200 py-2 rounded font-semibold border border-gray-600 hover:bg-gray-600"
                   onClick={() => setEditRowIdx(null)}
-                  disabled={saving}
+                  disabled={saving || deleting}
                 >
                   Cancel
                 </button>
@@ -673,6 +690,72 @@ function App() {
 
   function handleEditChange(col, val) {
     setEditRowData((prev) => ({ ...prev, [col]: val }));
+  }
+
+  async function handleDelete() {
+    console.log('=== DELETE BUTTON CLICKED ===');
+    console.log('Edit Row Data:', editRowData);
+    console.log('Selected Doc:', selectedDoc);
+    console.log('Selected Sheet:', selectedSheet);
+    
+    if (!window.confirm('Are you sure you want to delete this row? This action cannot be undone.')) {
+      console.log('Delete cancelled by user');
+      return;
+    }
+
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const rowNumber = editRowData.row_number !== undefined ? editRowData.row_number : editRowIdx;
+      
+      // Create request body for delete operation
+      const requestBody = {
+        doc: selectedDoc,
+        sheet: selectedSheet,
+        row_number: rowNumber
+      };
+      
+      // Debug logging
+      console.log('=== DELETE WEBHOOK DEBUG ===');
+      console.log('DELETE_URLS:', DELETE_URLS);
+      console.log('Request Body:', requestBody);
+      console.log('Row Number:', rowNumber);
+      console.log('===========================');
+      
+      const response = await tryEndpoints(
+        DELETE_URLS,
+        (url) => axios.post(url, requestBody),
+        "DELETE"
+      );
+      
+      console.log('=== DELETE WEBHOOK RESPONSE ===');
+      console.log('Response:', response);
+      console.log('Response Status:', response?.status);
+      console.log('Response Data:', response?.data);
+      console.log('=============================');
+      
+      // Remove the row from local data
+      setData((prev) => prev.filter((row) => 
+        (row.row_number !== undefined ? row.row_number : row) !== rowNumber
+      ));
+      
+      // Close the edit modal
+      setEditRowIdx(null);
+      
+    } catch (e) {
+      const tried = e._allTriedEndpoints || DELETE_URLS;
+      console.error("Delete error:", e);
+      setDeleteError(
+        `Failed to delete row.\nTried endpoints:\n${tried.join("\n")}\n` +
+          (e.response && e.response.data
+            ? typeof e.response.data === "string"
+              ? e.response.data
+              : JSON.stringify(e.response.data)
+            : e.message || "")
+      );
+    } finally {
+      setDeleting(false);
+    }
   }
 
   async function handleSave() {

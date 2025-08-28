@@ -44,7 +44,7 @@ For a step-by-step setup process, see our **[Complete Setup Checklist](SETUP_CHE
    - Configure environment variables
 
 2. **[Generate n8n Templates](n8n_templates/README-n8n-generator.md#5-generate-and-import-templates)**
-   - Run the template generator
+   - Run the template generator (creates Fetch, Update, and Delete workflows)
    - Import workflows to n8n
    - Configure document IDs
 
@@ -106,6 +106,7 @@ MD-Sheet-Editor/
 - **Real-time Updates**: Instant synchronization with Google Sheets
 - **Multi-Document Support**: Switch between different Google Sheets documents
 - **Multi-Sheet Support**: Navigate between sheets within documents
+- **Row Deletion**: Delete rows with confirmation dialog for safe data removal
 
 ### **Search & Navigation**
 - **Global Search**: Search across all columns in the current sheet
@@ -115,7 +116,7 @@ MD-Sheet-Editor/
 
 ### **Content Display**
 - **Truncated Text**: Long content is truncated with click-to-expand functionality
-- **Full-Content Modal**: Click truncated cells to view complete content
+- **Full-Content Modal**: Click truncated cells to view complete content with full-screen editing
 - **Clickable URLs**: Automatic URL detection with clickable links
 - **Data Formatting**: Clean, readable data presentation
 
@@ -124,14 +125,15 @@ MD-Sheet-Editor/
 - **Error Handling**: Graceful error management with user-friendly messages
 - **Fallback Strategy**: Multiple endpoint support with automatic failover
 - **Loading States**: Visual feedback during data operations
+- **Safe Deletion**: Confirmation dialogs and proper error handling for row deletion
 
 ## 🎬 Demo
 
-See MD Sheet Editor in action! This demo shows the key features including document selection, sheet navigation, data editing, and search functionality.
+See MD Sheet Editor in action! This demo shows the key features including document selection, sheet navigation, data editing, search functionality, and row deletion.
 
 ![MD Sheet Editor Demo](assets/demo/md-sheet-editor-demo.gif)
 
-*The demo showcases the responsive design, dark theme, and intuitive user interface for managing Google Sheets data.*
+*The demo showcases the responsive design, dark theme, and intuitive user interface for managing Google Sheets data. The application now includes full CRUD operations: Create, Read, Update, and Delete.*
 
 ## 🔧 Configuration
 
@@ -145,6 +147,7 @@ The application uses environment variables for configuration:
 - `REACT_APP_N8N_PORT` - n8n port (default: 5678)
 - `REACT_APP_N8N_FETCH_WEBHOOK` - Fetch webhook name (default: Fetch-Rows-Multi)
 - `REACT_APP_N8N_UPDATE_WEBHOOK` - Update webhook name (default: Update-Row-Multi)
+- `REACT_APP_N8N_DELETE_WEBHOOK` - Delete webhook name (default: Delete-Row)
 - `REACT_APP_DOC_SHEET_CONFIG` - Document and sheet configuration
 - `GOOGLE_SHEETS_OAUTH2_API_ID` - Google Sheets credential ID for n8n
 
@@ -166,6 +169,7 @@ REACT_APP_N8N_CUSTOM_DOMAIN=n8n.yourdomain.com
 REACT_APP_N8N_LOCALHOST=localhost
 REACT_APP_N8N_PORT=5678
 REACT_APP_N8N_CUSTOM_DOMAIN=n8n.yourdomain.com
+REACT_APP_N8N_DELETE_WEBHOOK=Delete-Row
 ```
 
 ### How It Works
@@ -237,7 +241,9 @@ For issues and questions:
 - **Modern**: Built with current best practices and technologies
 - **Scalable**: Can handle multiple documents and large datasets
 - **Reliable**: Built-in error handling and validation
-- **Mobile-Ready**: Responsive design works on all devices 
+- **Mobile-Ready**: Responsive design works on all devices
+- **Full CRUD Operations**: Complete Create, Read, Update, and Delete functionality
+- **Safe Data Management**: Confirmation dialogs and proper error handling for data operations 
 
 ---
 
